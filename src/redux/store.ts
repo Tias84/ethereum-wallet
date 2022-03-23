@@ -1,26 +1,31 @@
 // Import external libraries
-import { createStore, applyMiddleware } from "redux";
+// import { createStore, applyMiddleware } from "redux";
 import { composeWithDevTools } from "redux-devtools-extension";
-import { createEpicMiddleware } from "redux-observable";
+import { createEpicMiddleware, EpicMiddleware } from "redux-observable";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-
+import { useSelector, TypedUseSelectorHook, useDispatch } from "react-redux";
 import WalletTransform from "../redux/wallet/persistTransform";
 import TransactionTransform from "../redux/transaction/persistTransform";
 // Epic
 import rootEpic from "./epics.index";
-
+import thunk from "redux-thunk";
 // Import reducers
-import { rootReducer } from "./reducer.index";
+// import { rootReducer } from "./reducer.index";
 
 // Firebase
 import firebase from "firebase/app";
 import "firebase/firestore";
+
+// todo sostituisco con i nuovi import
 import { CommonReducerState } from "./common/types";
 import { TransactionReducerState } from "./transaction/types";
 import { WalletReducerState } from "./wallet/types";
 import { WalletconnectReducerState } from "./walletconnect/types";
 import { AddressBookReducerState } from "./addressbook/types";
+
+import { configureStore } from "@reduxjs/toolkit";
+import rootReducer, { reducersActions } from "./reducers";
 
 // Initialize firebase
 const firebaseConfig = {
@@ -47,20 +52,45 @@ const persistConfig = {
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 // Export store
-export const store = createStore(
-  persistedReducer,
-  composeWithDevTools(applyMiddleware(epicMiddleware))
-);
+// export const store = createStore(
+//   persistedReducer,
+//   composeWithDevTools(applyMiddleware(epicMiddleware))
+// );
+
+// export const persistor = persistStore(store);
+
+// // Start epic middleware
+// epicMiddleware.run(rootEpic);
+
+export type RootState = {
+  common: CommonReducerState;
+  transaction: TransactionReducerState;
+  wallet: WalletReducerState;
+  walletConnect: WalletconnectReducerState;
+  addressbook: AddressBookReducerState;
+};
+
+// export const store = configureStore({
+//   reducer: rootReducer,
+// });
+
+// export const store = createStore(
+//   persistedReducer,
+//   composeWithDevTools(applyMiddleware(epicMiddleware))
+// );
+// const test = combineReducers([...rootReducer, persistedReducer]);
+export const store = configureStore({
+  reducer: persistedReducer,
+  middleware: [epicMiddleware, thunk],
+});
 
 export const persistor = persistStore(store);
 
 // Start epic middleware
 epicMiddleware.run(rootEpic);
 
-export type RootState = {
-  common: CommonReducerState;
-  transaction: TransactionReducerState;
-  wallet: WalletReducerState;
-  walletconnect: WalletconnectReducerState;
-  addressbook: AddressBookReducerState;
-};
+export type AppDispatch = typeof store.dispatch;
+
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+export const actions = reducersActions;

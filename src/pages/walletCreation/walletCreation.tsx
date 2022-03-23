@@ -6,7 +6,7 @@ import {
   useColorModeValue,
   useToast,
 } from "@chakra-ui/react";
-import { useState, useCallback, FunctionComponent } from "react";
+import { useState, useCallback } from "react";
 import { useHistory } from "react-router-dom";
 
 import { bindActionCreators } from "redux";
@@ -21,23 +21,9 @@ import Footer from "../../components/footer/footer";
 import { useTranslation } from "react-i18next";
 import { usePlatformDetector } from "../../imports/utils";
 
-type WalletCreationProps = {
-  wallet?: any;
-  loading: boolean;
-  walletActions?: any;
-  error?: any;
-  creationStep: CreationSteps;
-  walletconnect: any;
-};
+import { useAppSelector } from "../../redux/store";
 
-const WalletCreation: FunctionComponent<WalletCreationProps> = ({
-  wallet,
-  loading,
-  error,
-  creationStep,
-  walletconnect,
-  ...props
-}) => {
+const WalletCreation = ({ ...props }) => {
   const [isImport, setIsImport] = useState(true);
   const { t } = useTranslation();
   const bgColor = useColorModeValue("gray.100", "brand.900");
@@ -45,6 +31,11 @@ const WalletCreation: FunctionComponent<WalletCreationProps> = ({
   const platform = usePlatformDetector();
   const toast = useToast();
   const walletActions: typeof wActions = props.walletActions;
+  const loading = useAppSelector((state) => state.wallet.loading);
+  const error = useAppSelector((state) => state.wallet.error);
+  const wallet = useAppSelector((state) => state.wallet.wallet);
+  const creationStep = useAppSelector((state) => state.wallet.creationStep);
+  const walletConnect = useAppSelector((state) => state.walletConnect);
 
   // Import wallet instance
   const handleImport = useCallback(
@@ -130,7 +121,7 @@ const WalletCreation: FunctionComponent<WalletCreationProps> = ({
                 importWallet={(key: any) => {
                   handleImport(key);
                 }}
-                qrCode={walletconnect.connector && walletconnect.connector.uri}
+                qrCode={walletConnect.connector && walletConnect.connector.uri}
                 layoutType="normal"
               />
             )}
@@ -217,3 +208,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(WalletCreation);
+// export default WalletCreation;

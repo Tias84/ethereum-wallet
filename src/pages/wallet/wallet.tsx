@@ -30,6 +30,7 @@ import AddressList from "../../components/addressList/addressList";
 
 import { useTranslation } from "react-i18next";
 import { AvailableNetworks } from "../../imports/config";
+import { useAppSelector } from "../../redux/store";
 
 type WalletProps = {
   wallet?: any;
@@ -47,8 +48,13 @@ const Wallet = (props: WalletProps) => {
   const { t } = useTranslation();
   const platform = usePlatformDetector();
   const history = useHistory();
-  const wallet = props.wallet;
-  const loading = props.loading;
+  // const wallet = props.wallet;
+  // const loading = props.loading;
+  const wallet = useAppSelector((state) => state.wallet.wallet);
+  const loading = useAppSelector((state) => state.wallet.loading);
+  const tourCompleted = useAppSelector((state) => state.common.guide.wallet);
+  const addresses = useAppSelector((state) => state.addressbook.addresses);
+  const network = useAppSelector((state) => state.common.selectedNetwork);
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
   const accentColor = "teal";
 
@@ -120,13 +126,13 @@ const Wallet = (props: WalletProps) => {
   }, [history, wallet]);
 
   useEffect(() => {
-    if (!props.tourCompleted) {
+    if (!tourCompleted) {
       setTimeout(() => setIsTourOpen(true), 1000);
     }
 
     // props?.addressBookActions?.addressBookFetch();
     props?.addressBookActions?.addressBookSubscribe();
-  }, [props?.addressBookActions, props.tourCompleted]);
+  }, [props?.addressBookActions, tourCompleted]);
 
   const handleTourClose = useCallback(() => {
     setIsTourOpen(false);
@@ -176,17 +182,17 @@ const Wallet = (props: WalletProps) => {
                 <Heading fontSize={fontSize} id="balance">
                   <LiveBalance
                     walletAddress={wallet.address}
-                    provider={getProviderByNetwork(props.network)}
+                    provider={getProviderByNetwork(network)}
                   />
                 </Heading>
                 <Heading size={size} pl={4}>
-                  {getSymbolByNetwork(props.network)}
+                  {getSymbolByNetwork(network)}
                 </Heading>
               </>
             )}
           </Flex>
           <Flex flex="0.4">
-            <WalletAddress address={wallet?.address} network={props.network} />
+            <WalletAddress address={wallet?.address} network={network} />
           </Flex>
           <Flex flex="1.4" justifyContent="center" alignItems="center">
             <Button
@@ -230,9 +236,9 @@ const Wallet = (props: WalletProps) => {
         <Divider orientation="horizontal" colorScheme="blackAlpha" size="2" />
         <Flex flex=".8" direction="column" overflow="scroll">
           <AddressList
-            addresses={props.addresses}
+            addresses={addresses}
             onAddressClick={(addr) => history.push(`/wallet/send/${addr}`)}
-            network={props.network}
+            network={network}
             myAddress={wallet?.address}
           />
         </Flex>
@@ -273,3 +279,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Wallet);
+// export default Wallet;

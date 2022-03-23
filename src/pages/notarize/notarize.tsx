@@ -42,6 +42,7 @@ import Footer from "../../components/footer/footer";
 import ConfirmData from "../../components/modals/confirmData";
 
 import { useTranslation } from "react-i18next";
+import { useAppSelector } from "../../redux/store";
 
 type NotarizeProps = {
   wallet?: any;
@@ -69,17 +70,19 @@ const Notarize = (props: NotarizeProps) => {
   const { t } = useTranslation();
   const history = useHistory();
   const { documentHash } = useParams<NotarizeParams>();
-  const wallet = props.wallet;
-  const loading = props.loading;
+  // const wallet = props.wallet;
+  // const loading = props.loading;
+  const wallet = useAppSelector((state) => state.wallet.wallet);
+  const loading = useAppSelector((state) => state.transaction.loading);
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
   const [hash, setHash] = useState<string>(documentHash || "");
   const [transactionSpeed, setTransactionSpeed] =
     useState<TransactionSpeed>("slow");
   const [gasPrice, setGasPrice] = useState<number>(GasPriceMap.slow);
-
+  const network = useAppSelector((state) => state.common.selectedNetwork);
   const inputRef = useRef<HTMLInputElement>(null);
   const isValidHash = /^[A-Fa-f0-9]{64}$/g.test(hash);
-  const provider = getProviderByNetwork(props.network);
+  const provider = getProviderByNetwork(network);
   const [balance, setBalance] = useState("");
 
   const getBalance = async () => {
@@ -270,7 +273,7 @@ const Notarize = (props: NotarizeProps) => {
             platform={platform}
             gasPrice={gasPrice}
             gasLimit={21000}
-            symbol={getSymbolByNetwork(props.network)}
+            symbol={getSymbolByNetwork(network)}
           />
         </Flex>
         <Flex
@@ -337,3 +340,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Notarize);
+// export default Notarize;

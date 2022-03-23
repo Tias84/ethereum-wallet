@@ -7,6 +7,7 @@ import { ColorModeScript } from "@chakra-ui/react";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 import * as wActions from "./redux/walletconnect/actionCreators";
+import { useAppSelector, useAppDispatch, actions, store } from "./redux/store";
 
 // i18n
 import "./i18n";
@@ -27,9 +28,12 @@ type AppProps = {
 };
 
 const App: FunctionComponent<AppProps> = ({ ...props }) => {
-  const {
-    walletconnect: { connector, initialized },
-  } = props;
+  const dispatch = useAppDispatch();
+
+  const { connector, initialized } = useAppSelector(
+    (state) => state.walletConnect
+  );
+
   const platform = usePlatformDetector();
   const walletconnectActions: typeof wActions = props.walletconnectActions;
 
@@ -39,9 +43,9 @@ const App: FunctionComponent<AppProps> = ({ ...props }) => {
     ) : null;
   };
 
-  useEffect(() => {
-    walletconnectActions.walletconnectInitialize();
-  }, []);
+  // useEffect(() => {
+  //   dispatch(actions.wallet.generateWallet);
+  // }, []);
 
   useEffect(() => {
     if (initialized) {
@@ -111,4 +115,5 @@ const mapDispatchToProps = (dispatch: any) => ({
   walletconnectActions: bindActionCreators(wActions, dispatch),
 });
 
-export default connect((state) => mapStateToProps, mapDispatchToProps)(App);
+export default App;
+// export default connect((state) => mapStateToProps, mapDispatchToProps)(App);

@@ -1,70 +1,70 @@
-import { ethers } from 'ethers';
-import { combineEpics, Epic } from 'redux-observable';
+import { ethers } from "ethers";
+import { combineEpics, Epic } from "redux-observable";
 
 // import { of, from, interval } from 'rxjs';
-import { of, from } from 'rxjs';
-import { filter, catchError, mergeMap, map, delay } from 'rxjs/operators';
+import { of, from } from "rxjs";
+import { filter, catchError, mergeMap, map, delay } from "rxjs/operators";
 import {
-    importWallet,
-    generateWallet,
-    generateWalletOk,
-    generateWalletFail,
-    // balanceUpdateOk,
-    // balanceUpdateFail,
-    WalletAction,
-    // generateWalletCurrentBlock,
-} from './actionCreators';
-import { WalletReducerState } from './types';
+  importWallet,
+  generateWallet,
+  generateWalletOk,
+  generateWalletFail,
+  // balanceUpdateOk,
+  // balanceUpdateFail,
+  WalletAction,
+  // generateWalletCurrentBlock,
+} from "./actionCreators";
+import { WalletReducerState } from "./types";
 
 // import { balanceRefreshInterval, provider } from '../../imports/config';
-import { isActionOf } from 'typesafe-actions';
+import { isActionOf } from "typesafe-actions";
 
 const walletCreationEpic: Epic<
-    WalletAction,
-    WalletAction,
-    WalletReducerState
-> = (action$, state$) => 
-    action$.pipe(
-        filter(isActionOf(generateWallet)),
-        mergeMap(() => {
-            const walletPromise: Promise<any> = new Promise(resolve => {
-                const wallet = ethers.Wallet.createRandom();
-                resolve(wallet);
-            });
-            return from(walletPromise).pipe(
-                delay(2000),
-                map(wallet => {
-                    return generateWalletOk(wallet);
-                }),
-                catchError(error => {
-                    return of(generateWalletFail(error));
-                }),
-            );
+  WalletAction,
+  WalletAction,
+  WalletReducerState
+> = (action$, state$) =>
+  action$.pipe(
+    filter(isActionOf(generateWallet)),
+    mergeMap(() => {
+      const walletPromise: Promise<any> = new Promise((resolve) => {
+        const wallet = ethers.Wallet.createRandom();
+        resolve(wallet);
+      });
+      return from(walletPromise).pipe(
+        delay(2000),
+        map((wallet) => {
+          console.log("wallet", wallet);
+          return generateWalletOk(wallet);
         }),
-    );
+        catchError((error) => {
+          return of(generateWalletFail(error));
+        })
+      );
+    })
+  );
 
-const walletImportEpic: Epic<
-    WalletAction,
-    WalletAction,
-    WalletReducerState
-> = (action$, state$) => 
-    action$.pipe(
-        filter(isActionOf(importWallet)),
-        mergeMap(({payload: {key}}) => {
-            const walletPromise: Promise<any> = new Promise(resolve => {
-                const wallet = new ethers.Wallet(key);
-                resolve(wallet);
-            });
-            return from(walletPromise).pipe(
-                map(wallet => {
-                    return generateWalletOk(wallet);
-                }),
-                catchError(error => {
-                    return of(generateWalletFail(error));
-                }),
-            );
+const walletImportEpic: Epic<WalletAction, WalletAction, WalletReducerState> = (
+  action$,
+  state$
+) =>
+  action$.pipe(
+    filter(isActionOf(importWallet)),
+    mergeMap(({ payload: { key } }) => {
+      const walletPromise: Promise<any> = new Promise((resolve) => {
+        const wallet = new ethers.Wallet(key);
+        resolve(wallet);
+      });
+      return from(walletPromise).pipe(
+        map((wallet) => {
+          return generateWalletOk(wallet);
         }),
-    );
+        catchError((error) => {
+          return of(generateWalletFail(error));
+        })
+      );
+    })
+  );
 
 // const walletCreationCurrBlockEpic: Epic<
 //     WalletAction,

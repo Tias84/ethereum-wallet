@@ -83,7 +83,7 @@ const txSendEpic: Epic<TransactionActions, TransactionActions, RootState> = (
     filter(isActionOf(txSend)),
     mergeMap(({ payload }) => {
       const wallet = state$.value.wallet.wallet;
-      const connector = state$.value.walletconnect.connector;
+      const connector = state$.value.walletConnect.connector;
       const isWalletConnect = !wallet.privateKey && !wallet.mnemonic;
       const network = state$.value.common.selectedNetwork;
       const provider = getProviderByNetwork(network);

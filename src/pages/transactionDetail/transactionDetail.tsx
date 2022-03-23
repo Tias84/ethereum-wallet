@@ -21,11 +21,11 @@ import { EtherscanIcon } from "../../components/icons/icons";
 import { useEffect } from "react";
 import { useHistory, useParams } from "react-router-dom";
 
-import { bindActionCreators } from "redux";
-import { connect } from "react-redux";
-import * as wActions from "../../redux/wallet/actionCreators";
-import * as abActions from "../../redux/addressbook/actionCreators";
-import { guideCompleted } from "../../redux/common/actionCreators";
+// import { bindActionCreators } from "redux";
+// import { connect } from "react-redux";
+// import * as wActions from "../../redux/wallet/actionCreators";
+// import * as abActions from "../../redux/addressbook/actionCreators";
+// import { guideCompleted } from "../../redux/common/actionCreators";
 import PageBody from "../../components/pageBody/pageBody";
 import {
   truncateStringByWidth,
@@ -34,10 +34,11 @@ import {
   getSymbolByNetwork,
 } from "../../imports/utils";
 import LottieLoader from "../../components/lottieLoader/lottieLoader";
-import { AvailableNetworks, CoinSymbol } from "../../imports/config";
+import { AvailableNetworks } from "../../imports/config";
 import Footer from "../../components/footer/footer";
 
 import { useTranslation } from "react-i18next";
+import { useAppSelector } from "../../redux/store";
 
 type TransactionDetailProps = {
   wallet?: any;
@@ -60,13 +61,22 @@ const TransactionDetail = (props: TransactionDetailProps) => {
   const { t } = useTranslation();
   const history = useHistory();
   const { hash } = useParams<TransactionDetailParams>();
-  const wallet = props.wallet;
-  const loading = props.loading;
+  // const wallet = props.wallet;
+  // const loading = props.loading;
+  const wallet = useAppSelector((state) => state.wallet.wallet);
+  const loading = useAppSelector((state) => state.wallet.loading);
+  const transactions = useAppSelector(
+    (state) => state.transaction.transactions
+  );
+  const pendingTransactions = useAppSelector(
+    (state) => state.transaction.pendingTransactions
+  );
+  const network = useAppSelector((state) => state.common.selectedNetwork);
   const platform = usePlatformDetector();
   /*console.log(hash);
   console.log(props.transactions);
   console.log(props.pendingTransactions);*/
-  const tx = props.transactions[hash] || props.pendingTransactions[hash];
+  const tx = transactions[hash] || pendingTransactions[hash];
   const isNotarization = tx.to === wallet.address;
 
   const TxStatus: { [key: number]: string } = {
@@ -79,7 +89,7 @@ const TransactionDetail = (props: TransactionDetailProps) => {
     1: "green",
   };
 
-  const isPendingTx = Boolean(props.pendingTransactions[hash]);
+  const isPendingTx = Boolean(pendingTransactions[hash]);
 
   useEffect(() => {
     if (!wallet) {
@@ -142,7 +152,7 @@ const TransactionDetail = (props: TransactionDetailProps) => {
               <Flex alignItems="center" justifyContent="center" pt={3}>
                 <EtherscanIcon mr={2} />
                 <a
-                  href={viewOnEtherscan(props.network, "tx", tx.hash)}
+                  href={viewOnEtherscan(network, "tx", tx.hash)}
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -178,7 +188,7 @@ const TransactionDetail = (props: TransactionDetailProps) => {
                     <Th>{t("transactionDetail.amount")}</Th>
                     <Td>{`${ethers.utils.formatEther(
                       tx.value
-                    )} ${getSymbolByNetwork(props.network)}`}</Td>
+                    )} ${getSymbolByNetwork(network)}`}</Td>
                   </Tr>
                 )}
                 {tx && isNotarization && (
@@ -190,7 +200,7 @@ const TransactionDetail = (props: TransactionDetailProps) => {
                 {tx?.receipt && (
                   <Tr>
                     <Th>{t("transactionDetail.fees")}</Th>
-                    <Td>{`${fees} ${getSymbolByNetwork(props.network)}`}</Td>
+                    <Td>{`${fees} ${getSymbolByNetwork(network)}`}</Td>
                   </Tr>
                 )}
                 {tx?.receipt && (
@@ -209,7 +219,7 @@ const TransactionDetail = (props: TransactionDetailProps) => {
                       <Flex alignItems="center" justifyContent="center">
                         <EtherscanIcon mr={2} />
                         <a
-                          href={viewOnEtherscan(props.network, "tx", tx.hash)}
+                          href={viewOnEtherscan(network, "tx", tx.hash)}
                           target="_blank"
                           rel="noreferrer"
                         >
@@ -236,24 +246,25 @@ const TransactionDetail = (props: TransactionDetailProps) => {
   );
 };
 
-const mapStateToProps = ({ wallet, addressbook, common, transaction }: any) => {
-  return {
-    wallet: wallet.wallet,
-    loading: wallet.loading,
-    addresses: addressbook.addresses,
-    tourCompleted: common.guide.wallet,
-    transactions: transaction.transactions,
-    pendingTransactions: transaction.pendingTransactions,
-    network: common.selectedNetwork,
-  };
-};
+// const mapStateToProps = ({ wallet, addressbook, common, transaction }: any) => {
+//   return {
+//     wallet: wallet.wallet,
+//     loading: wallet.loading,
+//     addresses: addressbook.addresses,
+//     tourCompleted: common.guide.wallet,
+//     transactions: transaction.transactions,
+//     pendingTransactions: transaction.pendingTransactions,
+//     network: common.selectedNetwork,
+//   };
+// };
 
-const mapDispatchToProps = (dispatch: any) => ({
-  walletActions: bindActionCreators(wActions, dispatch),
-  addressBookActions: bindActionCreators(abActions, dispatch),
-  commonActions: {
-    guideCompleted: (guideName: string) => dispatch(guideCompleted(guideName)),
-  },
-});
+// const mapDispatchToProps = (dispatch: any) => ({
+//   walletActions: bindActionCreators(wActions, dispatch),
+//   addressBookActions: bindActionCreators(abActions, dispatch),
+//   commonActions: {
+//     guideCompleted: (guideName: string) => dispatch(guideCompleted(guideName)),
+//   },
+// });
 
-export default connect(mapStateToProps, mapDispatchToProps)(TransactionDetail);
+// export default connect(mapStateToProps, mapDispatchToProps)(TransactionDetail);
+export default TransactionDetail;

@@ -45,6 +45,7 @@ import ConfirmData from "../../components/modals/confirmData";
 import { useTranslation } from "react-i18next";
 import { formatEther } from "@ethersproject/units";
 import { AvailableNetworks } from "../../imports/config";
+import { useAppSelector } from "../../redux/store";
 
 type SendTransactionProps = {
   wallet?: any;
@@ -87,8 +88,11 @@ const SendTransaction = (props: SendTransactionProps) => {
   const { t } = useTranslation();
   const history = useHistory();
   const { address } = useParams<SendTransactionParams>();
-  const wallet = props.wallet;
-  const loading = props.loading;
+  // const wallet = props.wallet;
+  // const loading = props.loading;
+  const wallet = useAppSelector((state) => state.wallet.wallet);
+  const loading = useAppSelector((state) => state.transaction.loading);
+  const network = useAppSelector((state) => state.common.selectedNetwork);
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
   const [destinationAddress, setDestinationAddress] = useState<string>(
     address || ""
@@ -123,8 +127,8 @@ const SendTransaction = (props: SendTransactionProps) => {
   }, [isTourOpen]);
 
   useEffect(() => {
-    calcMax(wallet.address, gasPrice, props.network).then(setMax);
-  }, [gasPrice, props.network, wallet.address]);
+    calcMax(wallet.address, gasPrice, network).then(setMax);
+  }, [gasPrice, network, wallet.address]);
 
   const handlePaste = useCallback(() => {
     navigator.clipboard.readText().then((text) => setDestinationAddress(text));
@@ -150,9 +154,9 @@ const SendTransaction = (props: SendTransactionProps) => {
   }, []);
 
   const handleMax = useCallback(async () => {
-    const max = await calcMax(wallet.address, gasPrice, props.network);
+    const max = await calcMax(wallet.address, gasPrice, network);
     max <= BigNumber.from(0) ? setAmount("0") : setAmount(formatEther(max));
-  }, [gasPrice, props.network, wallet.address]);
+  }, [gasPrice, network, wallet.address]);
 
   const handleSend = useCallback(() => {
     props.txActions.txSend(
@@ -326,7 +330,7 @@ const SendTransaction = (props: SendTransactionProps) => {
             platform={platform}
             gasPrice={gasPrice}
             gasLimit={21000}
-            symbol={getSymbolByNetwork(props.network)}
+            symbol={getSymbolByNetwork(network)}
           />
         </Flex>
         <Flex
@@ -394,3 +398,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SendTransaction);
+// export default SendTransaction;
